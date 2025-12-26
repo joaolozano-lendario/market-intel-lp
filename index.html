@@ -1,0 +1,624 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MarketIntel AI - Inteligência de Mercado com IA para E-commerce</title>
+  <meta name="description" content="Encontre produtos vencedores, monitore concorrentes e receba alertas inteligentes. A ferramenta de análise de mercado que os top sellers usam.">
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      darkMode: 'class',
+      theme: {
+        extend: {
+          fontFamily: {
+            sans: ['Inter', 'sans-serif'],
+            mono: ['JetBrains Mono', 'monospace'],
+          },
+        }
+      }
+    }
+  </script>
+  <style>
+    body {
+      -webkit-font-smoothing: antialiased;
+      -moz-osx-smoothing: grayscale;
+      margin: 0;
+      overflow-x: hidden;
+    }
+
+    * {
+      transition-property: background-color, border-color, color, fill, stroke;
+      transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+      transition-duration: 200ms;
+    }
+
+    .font-display {
+      font-family: 'Inter', sans-serif;
+      letter-spacing: -0.02em;
+    }
+
+    .no-scrollbar::-webkit-scrollbar { display: none; }
+    .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-20px); }
+    }
+    .animate-float { animation: float 6s ease-in-out infinite; }
+    .animate-float-delayed { animation: float 6s ease-in-out infinite; animation-delay: 2s; }
+
+    @keyframes pulse-glow {
+      0%, 100% { box-shadow: 0 0 40px rgba(0,0,0,0.1); }
+      50% { box-shadow: 0 0 80px rgba(0,0,0,0.2); }
+    }
+    .animate-glow { animation: pulse-glow 4s ease-in-out infinite; }
+
+    .gradient-text {
+      background: linear-gradient(135deg, #000 0%, #333 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+
+    .dark .gradient-text {
+      background: linear-gradient(135deg, #fff 0%, #ccc 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+  </style>
+  <script type="importmap">
+  {
+    "imports": {
+      "react/": "https://esm.sh/react@^19.2.3/",
+      "react": "https://esm.sh/react@^19.2.3",
+      "react-dom/": "https://esm.sh/react-dom@^19.2.3/",
+      "@heroicons/react/24/outline": "https://esm.sh/@heroicons/react@2.1.1/24/outline",
+      "@heroicons/react/24/solid": "https://esm.sh/@heroicons/react@2.1.1/24/solid"
+    }
+  }
+  </script>
+</head>
+<body class="bg-white dark:bg-zinc-950 text-black dark:text-zinc-100">
+  <div id="root"></div>
+  <script type="module">
+    // Inline the App since browsers can't process TSX directly
+    import React, { useState, useEffect } from 'react';
+    import { createRoot } from 'react-dom/client';
+    import {
+      ChartBarIcon,
+      BellAlertIcon,
+      MagnifyingGlassIcon,
+      UsersIcon,
+      CurrencyDollarIcon,
+      ArrowTrendingUpIcon,
+      CheckIcon,
+      XMarkIcon,
+      SparklesIcon,
+      ShieldCheckIcon,
+      ClockIcon,
+      RocketLaunchIcon,
+      ChatBubbleLeftEllipsisIcon,
+      ArrowRightIcon,
+      ChevronDownIcon,
+      PlayIcon,
+      FireIcon,
+      PresentationChartLineIcon,
+      BoltIcon,
+      EyeIcon,
+      GlobeAltIcon,
+      Bars3Icon
+    } from '@heroicons/react/24/outline';
+    import { CheckCircleIcon, StarIcon as StarSolidIcon } from '@heroicons/react/24/solid';
+
+    const e = React.createElement;
+
+    // Design System Constants
+    const getScoreColor = (score) => {
+      if (score >= 80) return '#10B981';
+      if (score >= 60) return '#F59E0B';
+      if (score >= 40) return '#F97316';
+      return '#EF4444';
+    };
+
+    // Header Component
+    const Header = ({ onCTA }) => {
+      const [isScrolled, setIsScrolled] = useState(false);
+      const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+
+      useEffect(() => {
+        const handleScroll = () => setIsScrolled(window.scrollY > 50);
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+      }, []);
+
+      return e('header', { className: `fixed top-0 left-0 right-0 z-50 transition-all duration-500 ${isScrolled ? 'bg-white/95 dark:bg-zinc-950/95 backdrop-blur-xl shadow-lg' : 'bg-transparent'}` },
+        e('div', { className: 'max-w-7xl mx-auto px-6 h-16 flex items-center justify-between' },
+          e('div', { className: 'flex items-center gap-3' },
+            e('div', { className: 'w-9 h-9 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-mono font-bold text-lg shadow-sm' }, 'M'),
+            e('span', { className: 'font-semibold tracking-tight text-sm uppercase text-black dark:text-white hidden sm:block' }, 'MarketIntel AI')
+          ),
+          e('nav', { className: 'hidden lg:flex items-center gap-8' },
+            ['Recursos', 'Como Funciona', 'Precos', 'Depoimentos'].map(item =>
+              e('a', { key: item, href: `#${item.toLowerCase().replace(' ', '-')}`, className: 'text-xs font-bold uppercase tracking-widest text-zinc-500 hover:text-black dark:hover:text-white transition-colors' }, item)
+            )
+          ),
+          e('div', { className: 'flex items-center gap-3' },
+            e('button', { className: 'hidden sm:block px-4 py-2 text-xs font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white transition-colors' }, 'Entrar'),
+            e('button', { onClick: onCTA, className: 'px-5 py-2.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-[0.25em] rounded-xl hover:opacity-80 transition-all' }, 'Comecar Gratis'),
+            e('button', { onClick: () => setMobileMenuOpen(!mobileMenuOpen), className: 'lg:hidden p-2 hover:bg-zinc-100 dark:hover:bg-zinc-900 rounded-lg' },
+              e(Bars3Icon, { className: 'w-6 h-6' })
+            )
+          )
+        ),
+        mobileMenuOpen && e('div', { className: 'lg:hidden absolute top-full left-0 right-0 bg-white dark:bg-zinc-950 border-b border-zinc-200 dark:border-zinc-800 p-6 space-y-4' },
+          ['Recursos', 'Como Funciona', 'Precos', 'Depoimentos'].map(item =>
+            e('a', { key: item, href: `#${item.toLowerCase().replace(' ', '-')}`, onClick: () => setMobileMenuOpen(false), className: 'block text-sm font-bold text-zinc-600 dark:text-zinc-400 hover:text-black dark:hover:text-white' }, item)
+          )
+        )
+      );
+    };
+
+    // Hero Section
+    const HeroSection = ({ onCTA }) => {
+      return e('section', { className: 'relative min-h-screen flex items-center justify-center pt-16 overflow-hidden' },
+        e('div', { className: 'absolute inset-0 opacity-[0.02] dark:opacity-[0.03]' },
+          e('div', { className: 'absolute inset-0', style: { backgroundImage: 'radial-gradient(circle at 1px 1px, black 1px, transparent 0)', backgroundSize: '40px 40px' } })
+        ),
+        e('div', { className: 'absolute top-1/4 left-10 w-20 h-20 bg-zinc-100 dark:bg-zinc-900 rounded-3xl animate-float opacity-50' }),
+        e('div', { className: 'absolute bottom-1/4 right-10 w-32 h-32 bg-zinc-100 dark:bg-zinc-900 rounded-3xl animate-float-delayed opacity-50' }),
+        e('div', { className: 'max-w-7xl mx-auto px-6 py-20 lg:py-32 text-center relative z-10' },
+          e('div', { className: 'inline-flex items-center gap-2 px-4 py-2 bg-zinc-100 dark:bg-zinc-900 rounded-full mb-8' },
+            e(SparklesIcon, { className: 'w-4 h-4 text-black dark:text-white' }),
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-widest text-zinc-600 dark:text-zinc-400' }, 'Inteligencia Artificial para E-commerce')
+          ),
+          e('h1', { className: 'font-display text-4xl md:text-5xl lg:text-7xl font-bold text-black dark:text-white leading-[1.1] mb-8' },
+            'Encontre Produtos que',
+            e('br'),
+            e('span', { className: 'gradient-text' }, 'Vendem Sozinhos')
+          ),
+          e('p', { className: 'text-lg md:text-xl text-zinc-500 dark:text-zinc-400 max-w-2xl mx-auto mb-12 font-light leading-relaxed' },
+            'A ferramenta de inteligencia de mercado que transforma sellers comuns em ',
+            e('b', { className: 'text-black dark:text-white' }, 'top performers'),
+            '. Descubra oportunidades antes da concorrencia.'
+          ),
+          e('div', { className: 'flex flex-col sm:flex-row items-center justify-center gap-4 mb-16' },
+            e('button', { onClick: onCTA, className: 'group w-full sm:w-auto px-8 py-4 bg-black dark:bg-white text-white dark:text-black text-sm font-bold uppercase tracking-[0.2em] rounded-2xl hover:scale-105 transition-all shadow-2xl flex items-center justify-center gap-3' },
+              'Comecar Agora - Gratis',
+              e(ArrowRightIcon, { className: 'w-5 h-5 group-hover:translate-x-1 transition-transform' })
+            ),
+            e('button', { className: 'group w-full sm:w-auto px-8 py-4 border-2 border-zinc-200 dark:border-zinc-800 text-black dark:text-white text-sm font-bold uppercase tracking-[0.1em] rounded-2xl hover:border-black dark:hover:border-white transition-all flex items-center justify-center gap-3' },
+              e(PlayIcon, { className: 'w-5 h-5' }),
+              'Ver Demo (2 min)'
+            )
+          ),
+          e('div', { className: 'flex flex-wrap items-center justify-center gap-6 text-zinc-400 dark:text-zinc-500' },
+            e('div', { className: 'flex items-center gap-2' },
+              e('div', { className: 'flex -space-x-2' },
+                [1,2,3,4,5].map(i =>
+                  e('div', { key: i, className: 'w-8 h-8 rounded-full bg-zinc-200 dark:bg-zinc-800 border-2 border-white dark:border-zinc-950 overflow-hidden' },
+                    e('img', { src: `https://i.pravatar.cc/100?img=${i+10}`, alt: '', className: 'w-full h-full object-cover' })
+                  )
+                )
+              ),
+              e('span', { className: 'text-xs font-bold' }, '+2.847 sellers ativos')
+            ),
+            e('div', { className: 'flex items-center gap-1.5' },
+              [1,2,3,4,5].map(i => e(StarSolidIcon, { key: i, className: 'w-4 h-4 text-yellow-500' })),
+              e('span', { className: 'text-xs font-bold ml-1' }, '4.9/5 (847 avaliacoes)')
+            )
+          )
+        ),
+        e('div', { className: 'absolute bottom-8 left-1/2 -translate-x-1/2 animate-bounce' },
+          e(ChevronDownIcon, { className: 'w-6 h-6 text-zinc-300 dark:text-zinc-700' })
+        )
+      );
+    };
+
+    // Problem Section
+    const ProblemSection = () => {
+      const problems = [
+        { icon: ClockIcon, title: "Horas Perdidas", desc: "Pesquisando produtos manualmente em dezenas de abas" },
+        { icon: EyeIcon, title: "Oportunidades Perdidas", desc: "Produtos virais que voce so descobre quando ja saturaram" },
+        { icon: CurrencyDollarIcon, title: "Dinheiro Perdido", desc: "Investindo em produtos sem analise de viabilidade real" },
+        { icon: UsersIcon, title: "Concorrentes na Frente", desc: "Eles tem ferramentas que voce nao conhece" },
+      ];
+
+      return e('section', { className: 'py-24 lg:py-32 bg-zinc-50 dark:bg-zinc-900/50' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'O PROBLEMA'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' }, 'Vendendo no Escuro?'),
+            e('p', { className: 'text-lg text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto' }, 'A maioria dos sellers toma decisoes baseadas em intuicao, nao em dados. Isso custa caro.')
+          ),
+          e('div', { className: 'grid md:grid-cols-2 lg:grid-cols-4 gap-6' },
+            problems.map((problem, i) =>
+              e('div', { key: i, className: 'group p-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500' },
+                e('div', { className: 'w-14 h-14 bg-red-50 dark:bg-red-900/20 rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform' },
+                  e(problem.icon, { className: 'w-7 h-7 text-red-500' })
+                ),
+                e('h3', { className: 'text-lg font-bold text-black dark:text-white mb-2' }, problem.title),
+                e('p', { className: 'text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed' }, problem.desc)
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // Solution Section
+    const SolutionSection = () => {
+      return e('section', { className: 'py-24 lg:py-32' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'grid lg:grid-cols-2 gap-16 items-center' },
+            e('div', null,
+              e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'A SOLUCAO'),
+              e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' },
+                'Seu Co-Piloto de',
+                e('br'),
+                'Inteligencia de Mercado'
+              ),
+              e('p', { className: 'text-lg text-zinc-500 dark:text-zinc-400 mb-8 leading-relaxed' },
+                'MarketIntel AI analisa milhoes de produtos em tempo real e entrega exatamente o que voce precisa: ',
+                e('b', { className: 'text-black dark:text-white' }, 'oportunidades validadas por dados'),
+                '.'
+              ),
+              e('div', { className: 'space-y-4' },
+                ["IA analisa +500k produtos diariamente", "Alertas em tempo real de oportunidades", "Monitoramento automatico de concorrentes", "Score de viabilidade por produto"].map((item, i) =>
+                  e('div', { key: i, className: 'flex items-center gap-3' },
+                    e('div', { className: 'w-6 h-6 bg-emerald-500 rounded-lg flex items-center justify-center' },
+                      e(CheckIcon, { className: 'w-4 h-4 text-white stroke-[3px]' })
+                    ),
+                    e('span', { className: 'text-sm font-medium text-zinc-700 dark:text-zinc-300' }, item)
+                  )
+                )
+              )
+            ),
+            e('div', { className: 'relative' },
+              e('div', { className: 'absolute -inset-4 bg-gradient-to-r from-zinc-100 to-zinc-200 dark:from-zinc-800 dark:to-zinc-900 rounded-[2rem] blur-3xl opacity-50' }),
+              e('div', { className: 'relative bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl overflow-hidden shadow-2xl animate-glow' },
+                e('div', { className: 'relative aspect-[4/3] bg-zinc-100 dark:bg-zinc-800' },
+                  e('img', { src: 'https://images.unsplash.com/photo-1505740420928-5e560c06d30e?w=600', alt: 'Product', className: 'w-full h-full object-cover' }),
+                  e('div', { className: 'absolute top-4 left-4 flex gap-2' },
+                    e('span', { className: 'bg-white dark:bg-zinc-950 shadow-2xl px-3 py-1 rounded-lg text-[9px] font-bold flex items-center gap-1.5' },
+                      e(FireIcon, { className: 'w-3.5 h-3.5 text-orange-500' }), ' QUENTE'
+                    ),
+                    e('span', { className: 'bg-black dark:bg-zinc-100 text-white dark:text-zinc-900 px-3 py-1 rounded-lg text-[9px] font-bold uppercase tracking-widest' }, 'ML')
+                  )
+                ),
+                e('div', { className: 'p-6' },
+                  e('div', { className: 'flex justify-between items-start gap-4 mb-4' },
+                    e('div', null,
+                      e('h3', { className: 'text-base font-bold text-black dark:text-white mb-1' }, 'Fone Bluetooth Premium TWS'),
+                      e('span', { className: 'text-[10px] uppercase tracking-[0.2em] text-zinc-300 dark:text-zinc-600 font-bold' }, 'ELETRONICOS')
+                    ),
+                    e('div', { className: 'w-11 h-11 rounded-2xl flex items-center justify-center text-white font-mono font-bold text-base shadow-lg', style: { backgroundColor: getScoreColor(92) } }, '92')
+                  ),
+                  e('div', { className: 'bg-zinc-50 dark:bg-zinc-800/50 border border-zinc-100 dark:border-zinc-800 rounded-2xl p-4 mb-4' },
+                    e('div', { className: 'flex justify-between items-center mb-2' },
+                      e('span', { className: 'text-[9px] text-zinc-400 font-bold uppercase tracking-tighter' }, 'Tendencia'),
+                      e('span', { className: 'text-xs font-bold text-emerald-600 font-mono flex items-center gap-1' },
+                        e(ArrowTrendingUpIcon, { className: 'w-3 h-3' }), ' +147%'
+                      )
+                    ),
+                    e('div', { className: 'h-1 w-full bg-zinc-100 dark:bg-zinc-800 rounded-full overflow-hidden' },
+                      e('div', { className: 'h-full bg-emerald-500', style: { width: '92%' } })
+                    )
+                  ),
+                  e('div', { className: 'grid grid-cols-2 gap-4 mb-4' },
+                    e('div', { className: 'flex items-center gap-2' },
+                      e(UsersIcon, { className: 'w-4 h-4 text-zinc-300 dark:text-zinc-600' }),
+                      e('span', { className: 'text-[11px] text-zinc-500' }, e('b', { className: 'text-black dark:text-white font-mono' }, '23'), ' sellers')
+                    ),
+                    e('div', { className: 'flex items-center gap-2' },
+                      e(CurrencyDollarIcon, { className: 'w-4 h-4 text-zinc-300 dark:text-zinc-600' }),
+                      e('span', { className: 'text-[11px] text-zinc-500' }, e('b', { className: 'text-black dark:text-white font-mono' }, 'R$89'))
+                    )
+                  ),
+                  e('button', { className: 'w-full py-3.5 bg-black dark:bg-white text-white dark:text-black text-[10px] font-bold uppercase tracking-[0.25em] rounded-xl' }, 'Analisar Produto')
+                )
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // Features Section
+    const FeaturesSection = () => {
+      const features = [
+        { icon: MagnifyingGlassIcon, title: "Explorador Inteligente", desc: "Busque e descubra produtos tendencia com score de viabilidade automatico.", color: "bg-blue-50 dark:bg-blue-900/20", iconColor: "text-blue-600" },
+        { icon: PresentationChartLineIcon, title: "Meus Produtos", desc: "Monitore seu portfolio em tempo real. Alertas de queda de ranking.", color: "bg-purple-50 dark:bg-purple-900/20", iconColor: "text-purple-600" },
+        { icon: UsersIcon, title: "Radar de Concorrentes", desc: "Saiba exatamente o que seus concorrentes estao fazendo.", color: "bg-amber-50 dark:bg-amber-900/20", iconColor: "text-amber-600" },
+        { icon: BellAlertIcon, title: "Central de Alertas", desc: "Notificacoes inteligentes quando algo importante acontece.", color: "bg-red-50 dark:bg-red-900/20", iconColor: "text-red-600" },
+        { icon: ChatBubbleLeftEllipsisIcon, title: "Co-Pilot IA", desc: "Converse com a IA sobre qualquer produto ou nicho.", color: "bg-emerald-50 dark:bg-emerald-900/20", iconColor: "text-emerald-600" },
+        { icon: ChartBarIcon, title: "Analise de Nicho", desc: "TAM, sazonalidade, barreiras de entrada e saturacao.", color: "bg-indigo-50 dark:bg-indigo-900/20", iconColor: "text-indigo-600" }
+      ];
+
+      return e('section', { id: 'recursos', className: 'py-24 lg:py-32 bg-zinc-50 dark:bg-zinc-900/50' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'RECURSOS'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' }, 'Tudo que Voce Precisa.', e('br'), 'Nada que Voce Nao Precisa.')
+          ),
+          e('div', { className: 'grid md:grid-cols-2 lg:grid-cols-3 gap-6' },
+            features.map((feature, i) =>
+              e('div', { key: i, className: 'group p-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl hover:shadow-2xl hover:-translate-y-2 transition-all duration-500' },
+                e('div', { className: `w-14 h-14 ${feature.color} rounded-2xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform` },
+                  e(feature.icon, { className: `w-7 h-7 ${feature.iconColor}` })
+                ),
+                e('h3', { className: 'text-lg font-bold text-black dark:text-white mb-3' }, feature.title),
+                e('p', { className: 'text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed' }, feature.desc)
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // How It Works
+    const HowItWorksSection = () => {
+      const steps = [
+        { num: "01", title: "Conecte seus Marketplaces", desc: "Integre Mercado Livre, Amazon ou Shopee em 2 cliques.", icon: GlobeAltIcon },
+        { num: "02", title: "Explore Oportunidades", desc: "Use o Explorador para encontrar produtos validados por IA.", icon: MagnifyingGlassIcon },
+        { num: "03", title: "Monitore e Aja", desc: "Receba alertas quando algo importante acontecer.", icon: BoltIcon },
+      ];
+
+      return e('section', { id: 'como-funciona', className: 'py-24 lg:py-32' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'COMO FUNCIONA'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' }, 'Simples Como Deveria Ser')
+          ),
+          e('div', { className: 'grid lg:grid-cols-3 gap-8' },
+            steps.map((step, i) =>
+              e('div', { key: i, className: 'relative text-center' },
+                e('div', { className: 'w-24 h-24 bg-black dark:bg-white rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-2xl' },
+                  e(step.icon, { className: 'w-10 h-10 text-white dark:text-black' })
+                ),
+                e('span', { className: 'text-[10px] font-mono font-bold text-zinc-300 dark:text-zinc-700 mb-2 block' }, step.num),
+                e('h3', { className: 'text-xl font-bold text-black dark:text-white mb-3' }, step.title),
+                e('p', { className: 'text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed max-w-xs mx-auto' }, step.desc)
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // Testimonials
+    const TestimonialsSection = () => {
+      const testimonials = [
+        { name: "Lucas Mendes", role: "Top Seller - Mercado Livre", avatar: "https://i.pravatar.cc/100?img=11", text: "Em 3 meses triplicou meu faturamento. A IA encontrou um nicho que eu jamais teria descoberto sozinho.", metric: "+215% vendas" },
+        { name: "Amanda Costa", role: "Seller - Amazon", avatar: "https://i.pravatar.cc/100?img=23", text: "O alerta de concorrente me salvou. Ajustei meu preco 2h antes de perder o buy box.", metric: "R$47k salvos" },
+        { name: "Ricardo Ferreira", role: "Dropshipper", avatar: "https://i.pravatar.cc/100?img=33", text: "Antes eu perdia 4h por dia pesquisando produtos. Agora em 15 minutos tenho 10 produtos validados.", metric: "-85% tempo" }
+      ];
+
+      return e('section', { id: 'depoimentos', className: 'py-24 lg:py-32 bg-zinc-50 dark:bg-zinc-900/50' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'DEPOIMENTOS'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' }, 'Quem Usa, Recomenda')
+          ),
+          e('div', { className: 'grid lg:grid-cols-3 gap-6' },
+            testimonials.map((t, i) =>
+              e('div', { key: i, className: 'p-8 bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-3xl' },
+                e('div', { className: 'flex items-center gap-1 mb-6' },
+                  [1,2,3,4,5].map(s => e(StarSolidIcon, { key: s, className: 'w-4 h-4 text-yellow-500' }))
+                ),
+                e('p', { className: 'text-base text-zinc-700 dark:text-zinc-300 mb-6 leading-relaxed' }, `"${t.text}"`),
+                e('div', { className: 'flex items-center justify-between' },
+                  e('div', { className: 'flex items-center gap-3' },
+                    e('img', { src: t.avatar, alt: t.name, className: 'w-12 h-12 rounded-xl object-cover' }),
+                    e('div', null,
+                      e('p', { className: 'text-sm font-bold text-black dark:text-white' }, t.name),
+                      e('p', { className: 'text-[10px] text-zinc-400 dark:text-zinc-500 font-bold uppercase tracking-tighter' }, t.role)
+                    )
+                  ),
+                  e('div', { className: 'px-3 py-1.5 bg-emerald-50 dark:bg-emerald-900/20 rounded-lg' },
+                    e('span', { className: 'text-[10px] font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-tighter' }, t.metric)
+                  )
+                )
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // Pricing
+    const PricingSection = ({ onCTA }) => {
+      const plans = [
+        { name: "Starter", price: "0", desc: "Para comecar a explorar", features: ["50 pesquisas/mes", "Score de produtos", "3 produtos monitorados", "Alertas basicos"], cta: "Comecar Gratis", popular: false },
+        { name: "Pro", price: "147", desc: "Para sellers serios", features: ["Pesquisas ilimitadas", "Score + Analise de nicho", "50 produtos monitorados", "Alertas em tempo real", "Radar de concorrentes", "Co-Pilot IA ilimitado", "Suporte prioritario"], cta: "Comecar Pro", popular: true },
+        { name: "Business", price: "397", desc: "Para operacoes avancadas", features: ["Tudo do Pro +", "Produtos ilimitados", "API de integracao", "Multi-usuario (5)", "Dashboard white-label", "Gerente de sucesso"], cta: "Falar com Vendas", popular: false }
+      ];
+
+      return e('section', { id: 'precos', className: 'py-24 lg:py-32' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'PRECOS'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' }, 'Investimento que Retorna'),
+            e('p', { className: 'text-lg text-zinc-500 dark:text-zinc-400 max-w-xl mx-auto' }, 'Um unico produto encontrado paga a assinatura de 1 ano.')
+          ),
+          e('div', { className: 'grid lg:grid-cols-3 gap-6 items-start' },
+            plans.map((plan, i) =>
+              e('div', { key: i, className: `relative p-8 rounded-3xl transition-all duration-500 ${plan.popular ? 'bg-black dark:bg-white text-white dark:text-black scale-105 shadow-2xl' : 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800'}` },
+                plan.popular && e('div', { className: 'absolute -top-3 left-1/2 -translate-x-1/2 px-4 py-1 bg-emerald-500 rounded-full' },
+                  e('span', { className: 'text-[9px] font-bold uppercase tracking-widest text-white' }, 'Mais Popular')
+                ),
+                e('div', { className: 'text-center mb-8' },
+                  e('h3', { className: `text-sm font-bold uppercase tracking-widest mb-2 ${plan.popular ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-400 dark:text-zinc-500'}` }, plan.name),
+                  e('div', { className: 'flex items-baseline justify-center gap-1' },
+                    e('span', { className: 'text-sm font-light' }, 'R$'),
+                    e('span', { className: 'text-5xl font-bold font-mono' }, plan.price),
+                    e('span', { className: `text-sm ${plan.popular ? 'text-zinc-400 dark:text-zinc-500' : 'text-zinc-400'}` }, '/mes')
+                  ),
+                  e('p', { className: `text-sm mt-2 ${plan.popular ? 'text-zinc-300 dark:text-zinc-600' : 'text-zinc-500'}` }, plan.desc)
+                ),
+                e('div', { className: 'space-y-3 mb-8' },
+                  plan.features.map((f, j) =>
+                    e('div', { key: j, className: 'flex items-center gap-3' },
+                      e(CheckCircleIcon, { className: `w-5 h-5 flex-shrink-0 ${plan.popular ? 'text-emerald-400 dark:text-emerald-600' : 'text-emerald-500'}` }),
+                      e('span', { className: `text-sm ${plan.popular ? 'text-zinc-200 dark:text-zinc-700' : 'text-zinc-600 dark:text-zinc-400'}` }, f)
+                    )
+                  )
+                ),
+                e('button', { onClick: onCTA, className: `w-full py-4 font-bold uppercase tracking-[0.15em] rounded-xl transition-all ${plan.popular ? 'bg-white dark:bg-black text-black dark:text-white hover:opacity-90' : 'bg-black dark:bg-white text-white dark:text-black hover:opacity-80'}` }, plan.cta)
+              )
+            )
+          ),
+          e('div', { className: 'mt-12 text-center' },
+            e('div', { className: 'inline-flex items-center gap-3 px-6 py-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-2xl' },
+              e(ShieldCheckIcon, { className: 'w-6 h-6 text-emerald-600 dark:text-emerald-400' }),
+              e('span', { className: 'text-sm font-medium text-emerald-700 dark:text-emerald-300' }, 'Garantia de 14 dias. Nao gostou? Seu dinheiro de volta.')
+            )
+          )
+        )
+      );
+    };
+
+    // FAQ
+    const FAQSection = () => {
+      const [openIndex, setOpenIndex] = useState(0);
+      const faqs = [
+        { q: "Preciso saber programar para usar?", a: "Nao! MarketIntel foi feito para sellers, nao para programadores." },
+        { q: "Funciona com qual marketplace?", a: "Mercado Livre, Amazon Brasil e Shopee. Mais plataformas em breve." },
+        { q: "Os dados sao atualizados em tempo real?", a: "Sim. Nossos crawlers monitoram os marketplaces continuamente." },
+        { q: "Posso cancelar a qualquer momento?", a: "Sim, sem taxas ou burocracia. E ainda oferecemos 14 dias de garantia." },
+        { q: "Como a IA encontra produtos vencedores?", a: "Analisamos +50 variaveis: volume, tendencia, concorrencia, margem e mais." },
+      ];
+
+      return e('section', { className: 'py-24 lg:py-32 bg-zinc-50 dark:bg-zinc-900/50' },
+        e('div', { className: 'max-w-3xl mx-auto px-6' },
+          e('div', { className: 'text-center mb-16' },
+            e('span', { className: 'text-[10px] font-bold uppercase tracking-[0.3em] text-zinc-400 dark:text-zinc-500 mb-4 block' }, 'FAQ'),
+            e('h2', { className: 'font-display text-3xl md:text-4xl font-bold text-black dark:text-white mb-6' }, 'Perguntas Frequentes')
+          ),
+          e('div', { className: 'space-y-4' },
+            faqs.map((faq, i) =>
+              e('div', { key: i, className: 'bg-white dark:bg-zinc-900 border border-zinc-200 dark:border-zinc-800 rounded-2xl overflow-hidden' },
+                e('button', { onClick: () => setOpenIndex(openIndex === i ? null : i), className: 'w-full px-6 py-5 flex items-center justify-between text-left' },
+                  e('span', { className: 'font-bold text-black dark:text-white pr-4' }, faq.q),
+                  e(ChevronDownIcon, { className: `w-5 h-5 text-zinc-400 transition-transform ${openIndex === i ? 'rotate-180' : ''}` })
+                ),
+                openIndex === i && e('div', { className: 'px-6 pb-5' },
+                  e('p', { className: 'text-sm text-zinc-500 dark:text-zinc-400 leading-relaxed' }, faq.a)
+                )
+              )
+            )
+          )
+        )
+      );
+    };
+
+    // Final CTA
+    const FinalCTA = ({ onCTA }) => {
+      return e('section', { className: 'py-24 lg:py-32' },
+        e('div', { className: 'max-w-4xl mx-auto px-6 text-center' },
+          e('h2', { className: 'font-display text-3xl md:text-4xl lg:text-5xl font-bold text-black dark:text-white mb-6' },
+            'Pronto para Encontrar seu', e('br'), 'Proximo Produto Vencedor?'
+          ),
+          e('p', { className: 'text-lg text-zinc-500 dark:text-zinc-400 mb-10 max-w-xl mx-auto' }, 'Junte-se a +2.800 sellers que ja estao usando inteligencia de mercado para vender mais.'),
+          e('button', { onClick: onCTA, className: 'group px-10 py-5 bg-black dark:bg-white text-white dark:text-black text-sm font-bold uppercase tracking-[0.2em] rounded-2xl hover:scale-105 transition-all shadow-2xl inline-flex items-center gap-4' },
+            'Comecar Agora - Gratis',
+            e(RocketLaunchIcon, { className: 'w-5 h-5 group-hover:translate-x-1 transition-transform' })
+          ),
+          e('p', { className: 'text-xs text-zinc-400 dark:text-zinc-500 mt-4' }, 'Sem cartao de credito. Setup em 2 minutos.')
+        )
+      );
+    };
+
+    // Footer
+    const Footer = () => {
+      return e('footer', { className: 'py-12 border-t border-zinc-200 dark:border-zinc-800' },
+        e('div', { className: 'max-w-7xl mx-auto px-6' },
+          e('div', { className: 'flex flex-col md:flex-row items-center justify-between gap-6' },
+            e('div', { className: 'flex items-center gap-3' },
+              e('div', { className: 'w-8 h-8 bg-black dark:bg-white rounded-lg flex items-center justify-center text-white dark:text-black font-mono font-bold' }, 'M'),
+              e('span', { className: 'font-semibold tracking-tight text-sm uppercase text-black dark:text-white' }, 'MarketIntel AI')
+            ),
+            e('div', { className: 'flex items-center gap-6 text-xs text-zinc-400 dark:text-zinc-500' },
+              e('a', { href: '#', className: 'hover:text-black dark:hover:text-white transition-colors' }, 'Termos'),
+              e('a', { href: '#', className: 'hover:text-black dark:hover:text-white transition-colors' }, 'Privacidade'),
+              e('a', { href: '#', className: 'hover:text-black dark:hover:text-white transition-colors' }, 'Suporte')
+            ),
+            e('p', { className: 'text-xs text-zinc-400 dark:text-zinc-500' }, '2025 MarketIntel AI. Todos os direitos reservados.')
+          )
+        )
+      );
+    };
+
+    // Main App
+    const App = () => {
+      const [showModal, setShowModal] = useState(false);
+      const [email, setEmail] = useState('');
+      const [submitted, setSubmitted] = useState(false);
+
+      const handleCTA = () => setShowModal(true);
+
+      const handleSubmit = (ev) => {
+        ev.preventDefault();
+        if (email) {
+          setSubmitted(true);
+          setTimeout(() => {
+            setShowModal(false);
+            setSubmitted(false);
+            setEmail('');
+          }, 2000);
+        }
+      };
+
+      return e('div', { className: 'min-h-screen bg-white dark:bg-zinc-950 selection:bg-black selection:text-white dark:selection:bg-white dark:selection:text-black' },
+        e(Header, { onCTA: handleCTA }),
+        e(HeroSection, { onCTA: handleCTA }),
+        e(ProblemSection),
+        e(SolutionSection),
+        e(FeaturesSection),
+        e(HowItWorksSection),
+        e(TestimonialsSection),
+        e(PricingSection, { onCTA: handleCTA }),
+        e(FAQSection),
+        e(FinalCTA, { onCTA: handleCTA }),
+        e(Footer),
+        showModal && e('div', { className: 'fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-50 p-6', onClick: () => setShowModal(false) },
+          e('div', { className: 'bg-white dark:bg-zinc-900 rounded-3xl p-8 max-w-md w-full shadow-2xl relative', onClick: ev => ev.stopPropagation() },
+            e('button', { onClick: () => setShowModal(false), className: 'absolute top-4 right-4 p-2 hover:bg-zinc-100 dark:hover:bg-zinc-800 rounded-lg' },
+              e(XMarkIcon, { className: 'w-5 h-5 text-zinc-400' })
+            ),
+            submitted ?
+              e('div', { className: 'text-center py-8' },
+                e('div', { className: 'w-16 h-16 bg-emerald-500 rounded-full flex items-center justify-center mx-auto mb-6' },
+                  e(CheckIcon, { className: 'w-8 h-8 text-white stroke-[3px]' })
+                ),
+                e('h3', { className: 'text-2xl font-bold text-black dark:text-white mb-2' }, 'Conta Criada!'),
+                e('p', { className: 'text-zinc-500 dark:text-zinc-400' }, 'Verifique seu email para comecar.')
+              )
+            :
+              e('div', null,
+                e('div', { className: 'text-center mb-8' },
+                  e('div', { className: 'w-14 h-14 bg-black dark:bg-white rounded-2xl flex items-center justify-center mx-auto mb-4' },
+                    e(RocketLaunchIcon, { className: 'w-7 h-7 text-white dark:text-black' })
+                  ),
+                  e('h3', { className: 'text-2xl font-bold text-black dark:text-white mb-2' }, 'Crie sua Conta Gratis'),
+                  e('p', { className: 'text-sm text-zinc-500 dark:text-zinc-400' }, 'Acesso imediato. Sem cartao de credito.')
+                ),
+                e('form', { onSubmit: handleSubmit, className: 'space-y-4' },
+                  e('input', { type: 'email', value: email, onChange: (ev) => setEmail(ev.target.value), placeholder: 'Seu melhor email', required: true, className: 'w-full h-14 bg-zinc-50 dark:bg-zinc-800 border border-zinc-200 dark:border-zinc-700 rounded-xl px-4 text-black dark:text-white focus:border-black dark:focus:border-white outline-none transition-all' }),
+                  e('button', { type: 'submit', className: 'w-full h-14 bg-black dark:bg-white text-white dark:text-black font-bold uppercase tracking-[0.15em] rounded-xl hover:opacity-90 transition-all' }, 'Criar Conta Gratis')
+                ),
+                e('p', { className: 'text-[10px] text-zinc-400 dark:text-zinc-500 text-center mt-6' }, 'Ao criar sua conta, voce concorda com nossos Termos e Privacidade.')
+              )
+          )
+        )
+      );
+    };
+
+    const container = document.getElementById('root');
+    if (container) {
+      const root = createRoot(container);
+      root.render(e(App));
+    }
+  </script>
+</body>
+</html>
